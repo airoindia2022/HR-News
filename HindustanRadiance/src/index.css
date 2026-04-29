@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Inter", sans-serif;
+  --font-sans: "Inter", sans-serif;
+  
+  --color-parchment: #F9F9F7;
+  --color-midnight: #0F172A;
+  --color-radiance-gold: #D4AF37;
+  
+  --animate-ticker: ticker 30s linear infinite;
+  
+  @keyframes ticker {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+  }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply bg-parchment text-midnight transition-colors duration-300 font-sans;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-sans text-midnight;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply backdrop-blur-md bg-white/30 border border-white/20;
+  }
+  
+  .radiance-glow {
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+  }
+}

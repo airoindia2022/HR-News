@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+
+# Sitemap link
+Sitemap: https://hindustanradiance.co.in/sitemap.xml
+
