@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Home from './components/Home';
+import Careers from './components/Careers';
 import AdminLogin from './components/AdminLogin';
 import AdminDashboard from './components/AdminDashboard';
 
@@ -19,6 +20,7 @@ function App() {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Home />} />
+        <Route path="/careers" element={<Careers />} />
         <Route path="/contact/admin" element={<AdminLogin />} />
 
         {/* Protected Admin Routes */}

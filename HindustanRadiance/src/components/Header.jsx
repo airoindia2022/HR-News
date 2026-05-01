@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Cloud, Zap, Search, ShieldCheck, FileText } from 'lucide-react';
 import { useNews } from '../context/NewsContext';
+import { Link } from 'react-router-dom';
 
 const Header = () => {
   const [date, setDate] = useState(new Date());
   const [weather, setWeather] = useState({ temp: '24', city: 'New Delhi', icon: 'Cloud' });
-  const { epaperUrl } = useNews();
+  const { epaperUrl, language, toggleLanguage } = useNews();
 
   useEffect(() => {
     const timer = setInterval(() => setDate(new Date()), 1000);
@@ -26,8 +27,6 @@ const Header = () => {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           fetchWeather(position.coords.latitude, position.coords.longitude);
-          // Note: Getting City Name usually requires a Reverse Geocoding API like OpenStreetMap
-          // For now we keep the temperature dynamic
         },
         () => console.log("Location access denied")
       );
@@ -36,12 +35,16 @@ const Header = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const formattedDate = date.toLocaleDateString('en-US', {
+  const formattedDate = date.toLocaleDateString(language === 'hi' ? 'hi-IN' : 'en-US', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   });
+
+  const navItems = language === 'hi' 
+    ? ['विश्व', 'राजनीति', 'व्यापार', 'तकनीक', 'खेल', 'संस्कृति', 'करियर']
+    : ['World', 'Politics', 'Business', 'Technology', 'Sports', 'Culture', 'Careers'];
 
   return (
     <header className="sticky top-0 z-50 w-full glass shadow-sm">
@@ -51,44 +54,53 @@ const Header = () => {
           {/* Left: Date & Weather */}
           <div className="hidden lg:flex items-center space-x-6 text-sm font-medium">
             <div className="flex flex-col">
-              <span className="opacity-70">{formattedDate}</span>
+              <span className="opacity-70 font-bold tracking-tight">{formattedDate}</span>
               <div className="flex items-center space-x-2 text-radiance-gold">
                 <Cloud size={16} />
-                <span>{weather.temp}°C, {weather.city}</span>
+                <span className="font-bold">{weather.temp}°C, {language === 'hi' ? 'नई दिल्ली' : 'New Delhi'}</span>
               </div>
             </div>
           </div>
 
           {/* Center: Logo */}
           <div className="flex-1 flex justify-center">
-            <div className="text-center group cursor-pointer">
-              <h1 className="text-3xl md:text-4xl font-sans font-bold tracking-tighter transition-all group-hover:tracking-normal">
+            <Link to="/" className="text-center group cursor-pointer">
+              <h1 className="text-3xl md:text-4xl font-sans font-black tracking-tighter transition-all group-hover:tracking-normal">
                 HINDUSTAN <span className="text-radiance-gold">RADIANCE</span>
               </h1>
-              <p className="text-[10px] uppercase tracking-[0.3em] opacity-60 font-sans mt-1">
-                Illuminating the Truth
+              <p className="text-[10px] uppercase tracking-[0.3em] opacity-60 font-black mt-1">
+                {language === 'hi' ? 'सत्य का प्रकाश' : 'Illuminating the Truth'}
               </p>
-            </div>
+            </Link>
           </div>
 
           {/* Right: Actions */}
           <div className="flex flex-col items-end space-y-2">
-            <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-4">
+              
+              {/* Language Toggle */}
+              <button
+                onClick={toggleLanguage}
+                className="flex items-center gap-2 px-3 py-1.5 bg-slate-900 text-white text-[10px] font-black rounded-lg hover:bg-radiance-gold transition-all shadow-md uppercase tracking-widest border border-slate-800"
+              >
+                {language === 'en' ? 'हिन्दी' : 'ENG'}
+              </button>
+
               {epaperUrl && (
                 <a
                   href={epaperUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-4 py-2 bg-radiance-gold text-white text-xs font-bold rounded-full hover:bg-slate-900 transition-all shadow-md transform hover:-translate-y-0.5"
+                  className="flex items-center gap-2 px-4 py-2 bg-radiance-gold text-white text-[10px] font-black rounded-full hover:bg-slate-900 transition-all shadow-md transform hover:-translate-y-0.5"
                 >
                   <FileText size={14} />
-                  E-PAPER
+                  {language === 'hi' ? 'ई-पेपर' : 'E-PAPER'}
                 </a>
               )}
 
-              <div className="flex items-center px-3 py-1 rounded-full bg-red-500/10 text-red-500 text-xs font-bold animate-pulse">
+              <div className="flex items-center px-3 py-1.5 rounded-full bg-red-500/10 text-red-500 text-[10px] font-black animate-pulse border border-red-500/20">
                 <Zap size={14} className="mr-1 fill-current" />
-                LIVE
+                {language === 'hi' ? 'लाइव' : 'LIVE'}
               </div>
 
               <button
@@ -113,11 +125,15 @@ const Header = () => {
       </div>
 
       {/* Search/Nav placeholder */}
-      <nav className="border-t border-white/10 py-3 overflow-x-auto">
-        <ul className="max-w-7xl mx-auto px-4 flex justify-between md:justify-center md:space-x-12 text-sm font-semibold uppercase tracking-widest whitespace-nowrap">
-          {['World', 'Politics', 'Business', 'Technology', 'Sports', 'Culture', 'Features'].map((item) => (
-            <li key={item} className="hover:text-radiance-gold transition-colors cursor-pointer">
-              {item}
+      <nav className="border-t border-slate-100 py-3 overflow-x-auto">
+        <ul className="max-w-7xl mx-auto px-4 flex justify-between md:justify-center md:space-x-12 text-[10px] font-black uppercase tracking-[0.2em] whitespace-nowrap">
+          {navItems.map((item) => (
+            <li key={item} className="hover:text-radiance-gold transition-colors cursor-pointer text-slate-500">
+              {item === 'Careers' || item === 'करियर' ? (
+                <Link to="/careers">{item}</Link>
+              ) : (
+                item
+              )}
             </li>
           ))}
         </ul>

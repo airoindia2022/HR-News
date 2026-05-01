@@ -10,13 +10,44 @@ export const NewsProvider = ({ children }) => {
     mainStory: null,
     latestStories: [],
     trendingNews: [],
-    editorsChoice: [],
+    // editorsChoice: [],
     epaperUrl: null,
     isLoading: true,
     error: null
   });
 
-  const fetchNews = async () => {
+  const [language, setLanguage] = useState('en');
+
+  const translateText = async (text, target) => {
+    if (!text || target === 'en') return text;
+    try {
+      const response = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${target}&dt=t&q=${encodeURIComponent(text)}`);
+      const data = await response.json();
+      return data[0].map(item => item[0]).join('');
+    } catch (error) {
+      console.error("Translation error:", error);
+      return text;
+    }
+  };
+
+  const translateNewsItem = async (item, target) => {
+    if (!item || target === 'en') return item;
+    return {
+      ...item,
+      title: await translateText(item.title, target),
+      excerpt: await translateText(item.excerpt, target),
+      category: await translateText(item.category, target),
+      translated: true
+    };
+  };
+
+  const toggleLanguage = () => {
+    const newLang = language === 'en' ? 'hi' : 'en';
+    setLanguage(newLang);
+    fetchNews(newLang);
+  };
+
+  const fetchNews = async (targetLang = language) => {
     try {
       setNews(prev => ({ ...prev, isLoading: true }));
       const baseUrl = await getBaseUrl();
@@ -60,7 +91,7 @@ export const NewsProvider = ({ children }) => {
         console.error("E-paper fetch error:", err);
       }
 
-      // 3. Map RSS Items with robust slicing
+      // 3. Map RSS Items
       const rssMapped = {
         main: rssItems[0] ? {
           id: 'rss-main',
@@ -90,34 +121,64 @@ export const NewsProvider = ({ children }) => {
         }))
       };
 
-      // 4. Combine with Deduplication and ID Standardisation
+      // 4. Combine
       const adminHeadline = backendData.find(n => n.category === 'Headline');
       const mainStory = adminHeadline || rssMapped.main || backendData[0];
 
-      const mapItem = (item) => ({
-        ...item,
-        id: item._id || item.id
-      });
+      const mapItem = (item) => {
+        const cleanContent = item.content ? item.content.replace(/<[^>]*>?/gm, '').trim() : '';
+        const autoExcerpt = cleanContent.length > 160 ? cleanContent.substring(0, 160) + '...' : cleanContent;
 
-      // Filter out main story only if we have plenty of other stories
-      const latestFromBackend = backendData.filter(n => n.category === 'Latest stories');
-      const trendingFromBackend = backendData.filter(n => n.category === 'Trending now');
+        const formatUrl = (url) => {
+          if (!url) return url;
+          if (url.startsWith('/uploads/') || url.startsWith('/api/')) return `${baseUrl}${url}`;
+          // Fix old hardcoded URLs from previous versions
+          if (url.includes('localhost:5000/uploads/')) {
+            return url.replace('http://localhost:5000', baseUrl);
+          }
+          return url;
+        };
 
-      const combinedNews = {
+        return {
+          ...item,
+          id: item._id || item.id,
+          image: formatUrl(item.image || item.imageUrl) || "https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=80&w=800",
+          video: formatUrl(item.video || item.videoUrl) || null,
+          category: item.newsCategory || item.category || "General",
+          excerpt: item.excerpt || autoExcerpt,
+          author: item.author || (item.source?.name) || "News Desk",
+          date: item.date ? new Date(item.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : "Today",
+          link: item.link || (item._id ? `/news/${item._id}` : '#')
+        };
+      };
+
+      const latestFromBackend = backendData.filter(n => n.category === 'Latest stories' && n._id !== mainStory?._id);
+      const trendingFromBackend = backendData.filter(n => n.category === 'Trending now' && n._id !== mainStory?._id);
+      const editorsFromBackend = backendData.filter(n => n.category === "Editor's Choice" || (!['Headline', 'Latest stories', 'Trending now'].includes(n.category) && n._id !== mainStory?._id));
+
+      let combinedNews = {
         mainStory: mainStory ? mapItem(mainStory) : null,
         latestStories: [
-          ...latestFromBackend.filter(n => latestFromBackend.length < 2 || n._id !== mainStory?._id),
-          ...rssMapped.latest
-        ].slice(0, 12).map(mapItem),
+          ...latestFromBackend,
+          ...rssMapped.latest.filter(rss => !latestFromBackend.some(b => b.title === rss.title))
+        ].slice(0, 15).map(mapItem),
         trendingNews: [
-          ...trendingFromBackend.filter(n => trendingFromBackend.length < 2 || n._id !== mainStory?._id),
-          ...rssMapped.trending
-        ].slice(1, 7).map(mapItem),
-        editorsChoice: (backendData.length > 0 ? backendData.slice(3, 6) : rssMapped.latest.slice(3, 6)).map(mapItem),
+          ...trendingFromBackend,
+          ...rssMapped.trending.filter(rss => !trendingFromBackend.some(b => b.title === rss.title))
+        ].slice(0, 6).map(mapItem),
+        editorsChoice: (editorsFromBackend.length > 0 ? editorsFromBackend : backendData.slice(3, 10)).slice(0, 5).map(mapItem),
         epaperUrl,
         isLoading: false,
         error: null
       };
+
+      // 5. Automatic Translation if targetLang is Hindi
+      if (targetLang === 'hi') {
+        combinedNews.mainStory = await translateNewsItem(combinedNews.mainStory, 'hi');
+        combinedNews.latestStories = await Promise.all(combinedNews.latestStories.map(item => translateNewsItem(item, 'hi')));
+        combinedNews.trendingNews = await Promise.all(combinedNews.trendingNews.map(item => translateNewsItem(item, 'hi')));
+        combinedNews.editorsChoice = await Promise.all(combinedNews.editorsChoice.map(item => translateNewsItem(item, 'hi')));
+      }
 
       setNews(combinedNews);
     } catch (err) {
@@ -125,16 +186,17 @@ export const NewsProvider = ({ children }) => {
       setNews(prev => ({ ...prev, isLoading: false, error: err.message }));
     }
   };
+
   useEffect(() => {
     fetchNews();
-    // Har 30 minutes mein auto-refresh
-    const interval = setInterval(fetchNews, 30 * 60 * 1000);
+    const interval = setInterval(() => fetchNews(language), 30 * 60 * 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [language]);
 
   return (
-    <NewsContext.Provider value={{ ...news, refreshNews: fetchNews }}>
+    <NewsContext.Provider value={{ ...news, language, toggleLanguage, refreshNews: fetchNews }}>
       {children}
     </NewsContext.Provider>
   );
 };
+

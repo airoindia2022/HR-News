@@ -17,12 +17,20 @@ const newsSchema = new mongoose.Schema({
   },
   author: { 
     type: String, 
-    required: true 
+    required: false,
+    default: 'Hindustan Radiance Editorial'
   },
   image: { 
     type: String,
     default: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=80&w=800'
   },
+  imageData: Buffer,
+  imageContentType: String,
+  video: {
+    type: String
+  },
+  videoData: Buffer,
+  videoContentType: String,
   date: { 
     type: Date, 
     default: Date.now 
@@ -41,6 +49,10 @@ const newsSchema = new mongoose.Schema({
   isEditorsChoice: {
     type: Boolean,
     default: false
+  },
+  newsCategory: {
+    type: String,
+    default: 'General'
   }
 }, {
   timestamps: true
