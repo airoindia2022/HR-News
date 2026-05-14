@@ -4,6 +4,7 @@ import Home from './components/Home';
 import Careers from './components/Careers';
 import AdminLogin from './components/AdminLogin';
 import AdminDashboard from './components/AdminDashboard';
+import { PrivacyPolicy, TermsOfService, CookiePolicy } from './components/LegalPages';
 
 function App() {
   // Protected Route Component
@@ -22,6 +23,9 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/careers" element={<Careers />} />
         <Route path="/contact/admin" element={<AdminLogin />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-of-service" element={<TermsOfService />} />
+        <Route path="/cookie-policy" element={<CookiePolicy />} />
 
         {/* Protected Admin Routes */}
         <Route 
@@ -32,7 +36,6 @@ function App() {
             </ProtectedRoute>
           } 
         />
-
         {/* Catch all - redirect to home */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

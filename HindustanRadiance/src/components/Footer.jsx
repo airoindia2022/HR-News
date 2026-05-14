@@ -43,8 +43,7 @@ const Footer = () => {
               {language === 'hi' ? 'संपर्क' : 'Contact'}
             </h4>
             <ul className="space-y-4 text-sm font-medium text-slate-600">
-              <li>Press: <span className="text-slate-500">press@hradiance.com</span></li>
-              <li>Support: <span className="text-slate-500">help@hradiance.com</span></li>
+              <li>Editor: <span className="text-slate-500">editor@hindustanradiance.co.in</span></li>
               <li>Twitter: <span className="text-slate-500">@HR_Radiance</span></li>
               <li>LinkedIn: <span className="text-slate-500">Hindustan Radiance</span></li>
             </ul>
@@ -54,15 +53,15 @@ const Footer = () => {
         <div className="mt-20 pt-8 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
           <p>© 2026 Hindustan Radiance Media Group. All Rights Reserved.</p>
           <div className="flex gap-8">
-            <span className="hover:text-radiance-gold cursor-pointer transition-colors">
+            <Link to="/privacy-policy" className="hover:text-radiance-gold cursor-pointer transition-colors">
               {language === 'hi' ? 'गोपनीयता नीति' : 'Privacy Policy'}
-            </span>
-            <span className="hover:text-radiance-gold cursor-pointer transition-colors">
+            </Link>
+            <Link to="/terms-of-service" className="hover:text-radiance-gold cursor-pointer transition-colors">
               {language === 'hi' ? 'सेवा की शर्तें' : 'Terms of Service'}
-            </span>
-            <span className="hover:text-radiance-gold cursor-pointer transition-colors">
+            </Link>
+            <Link to="/cookie-policy" className="hover:text-radiance-gold cursor-pointer transition-colors">
               {language === 'hi' ? 'कुकी नीति' : 'Cookie Policy'}
-            </span>
+            </Link>
           </div>
         </div>
       </div>

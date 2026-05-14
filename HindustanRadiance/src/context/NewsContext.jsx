@@ -13,38 +13,68 @@ export const NewsProvider = ({ children }) => {
     // editorsChoice: [],
     epaperUrl: null,
     isLoading: true,
+    isTranslating: false,
     error: null
   });
 
   const [language, setLanguage] = useState('en');
 
-  const translateText = async (text, target) => {
-    if (!text || target === 'en') return text;
+  const translateText = async (texts, target) => {
+    if (!texts || texts.length === 0 || target === 'en') return texts;
+    
+    // If it's a single string, wrap it in an array
+    const isSingle = !Array.isArray(texts);
+    const textArray = isSingle ? [texts] : texts;
+    
     try {
-      const response = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${target}&dt=t&q=${encodeURIComponent(text)}`);
+      // Filter out empty or already translated strings to save on API calls
+      const separator = " |###| ";
+      const combinedText = textArray.join(separator);
+      
+      const response = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${target}&dt=t&q=${encodeURIComponent(combinedText)}`);
       const data = await response.json();
-      return data[0].map(item => item[0]).join('');
+      
+      // The API returns an array of arrays, we need to join the translated parts
+      const translatedCombined = data[0].map(item => item[0]).join('');
+      const translatedArray = translatedCombined.split(/ \|###\| |\|###\|| ### /).map(s => s.trim());
+      
+      return isSingle ? translatedArray[0] : translatedArray;
     } catch (error) {
       console.error("Translation error:", error);
-      return text;
+      return texts;
     }
   };
 
-  const translateNewsItem = async (item, target) => {
-    if (!item || target === 'en') return item;
-    return {
+  const translateNewsItems = async (items, target) => {
+    if (!items || items.length === 0 || target === 'en') return items;
+    
+    // Prepare all text that needs translation
+    const titles = items.map(item => item.title);
+    const excerpts = items.map(item => item.excerpt || "");
+    const categories = items.map(item => item.category || "");
+    
+    // Batch translate everything
+    const [translatedTitles, translatedExcerpts, translatedCategories] = await Promise.all([
+      translateText(titles, target),
+      translateText(excerpts, target),
+      translateText(categories, target)
+    ]);
+    
+    // Reconstruct items with translated text
+    return items.map((item, index) => ({
       ...item,
-      title: await translateText(item.title, target),
-      excerpt: await translateText(item.excerpt, target),
-      category: await translateText(item.category, target),
-      translated: true
-    };
+      title: translatedTitles[index] || item.title,
+      excerpt: translatedExcerpts[index] || item.excerpt,
+      category: translatedCategories[index] || item.category,
+      translated: true,
+      language: target
+    }));
   };
 
   const toggleLanguage = () => {
     const newLang = language === 'en' ? 'hi' : 'en';
     setLanguage(newLang);
-    fetchNews(newLang);
+    // fetchNews will be called by the useEffect hook
   };
 
   const fetchNews = async (targetLang = language) => {
@@ -132,7 +162,6 @@ export const NewsProvider = ({ children }) => {
         const formatUrl = (url) => {
           if (!url) return url;
           if (url.startsWith('/uploads/') || url.startsWith('/api/')) return `${baseUrl}${url}`;
-          // Fix old hardcoded URLs from previous versions
           if (url.includes('localhost:5000/uploads/')) {
             return url.replace('http://localhost:5000', baseUrl);
           }
@@ -174,16 +203,36 @@ export const NewsProvider = ({ children }) => {
 
       // 5. Automatic Translation if targetLang is Hindi
       if (targetLang === 'hi') {
-        combinedNews.mainStory = await translateNewsItem(combinedNews.mainStory, 'hi');
-        combinedNews.latestStories = await Promise.all(combinedNews.latestStories.map(item => translateNewsItem(item, 'hi')));
-        combinedNews.trendingNews = await Promise.all(combinedNews.trendingNews.map(item => translateNewsItem(item, 'hi')));
-        combinedNews.editorsChoice = await Promise.all(combinedNews.editorsChoice.map(item => translateNewsItem(item, 'hi')));
+        setNews(prev => ({ ...prev, isTranslating: true }));
+        
+        try {
+          const allItems = [
+            combinedNews.mainStory,
+            ...combinedNews.latestStories,
+            ...combinedNews.trendingNews,
+            ...combinedNews.editorsChoice
+          ].filter(Boolean);
+          
+          const translatedAll = await translateNewsItems(allItems, 'hi');
+          
+          let cursor = 0;
+          if (combinedNews.mainStory) combinedNews.mainStory = translatedAll[cursor++];
+          combinedNews.latestStories = translatedAll.slice(cursor, cursor + combinedNews.latestStories.length);
+          cursor += combinedNews.latestStories.length;
+          combinedNews.trendingNews = translatedAll.slice(cursor, cursor + combinedNews.trendingNews.length);
+          cursor += combinedNews.trendingNews.length;
+          combinedNews.editorsChoice = translatedAll.slice(cursor, cursor + combinedNews.editorsChoice.length);
+        } catch (error) {
+          console.error("Translation block error:", error);
+        }
+        
+        setNews({ ...combinedNews, isTranslating: false });
+      } else {
+        setNews({ ...combinedNews, isTranslating: false });
       }
-
-      setNews(combinedNews);
     } catch (err) {
       console.error("News Fetch Error:", err);
-      setNews(prev => ({ ...prev, isLoading: false, error: err.message }));
+      setNews(prev => ({ ...prev, isLoading: false, isTranslating: false, error: err.message }));
     }
   };
 

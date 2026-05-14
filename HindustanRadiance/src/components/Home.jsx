@@ -6,13 +6,14 @@ import MainContent from './MainContent';
 import SkeletonLoader from './SkeletonLoader';
 import QuickReadModal from './QuickReadModal';
 import { Sparkles } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNews } from '../context/NewsContext';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import Footer from './Footer';
 
 const Home = () => {
-  const { isLoading, language } = useNews();
+  const { isLoading, language, isTranslating } = useNews();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
@@ -71,6 +72,35 @@ const Home = () => {
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
       />
+
+      {/* Translation Overlay */}
+      <AnimatePresence>
+        {isTranslating && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-white/60 backdrop-blur-md dark:bg-slate-900/60"
+          >
+            <div className="flex flex-col items-center gap-6 p-12 rounded-3xl bg-white dark:bg-slate-800 shadow-2xl border border-radiance-gold/20">
+              <div className="relative">
+                <div className="w-20 h-20 rounded-full border-4 border-radiance-gold/20 border-t-radiance-gold animate-spin" />
+                <div className="absolute inset-0 flex items-center justify-center text-radiance-gold">
+                  <Sparkles size={32} className="animate-pulse" />
+                </div>
+              </div>
+              <div className="text-center">
+                <h3 className="text-2xl font-black text-midnight dark:text-white mb-2 uppercase tracking-tighter">
+                  {language === 'hi' ? 'हिंदी में परिवर्तित कर रहे हैं' : 'Translating to English'}
+                </h3>
+                <p className="text-slate-500 font-medium animate-pulse">
+                  {language === 'hi' ? 'कृपया प्रतीक्षा करें, हम समाचार का अनुवाद कर रहे हैं...' : 'Please wait, we are translating the news...'}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 };

@@ -1,8 +1,29 @@
 import React from 'react';
 import { User, Printer, MapPin, Phone, ShieldCheck, Mail } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useNews } from '../context/NewsContext';
 
 const OwnerDetailsCard = () => {
+  const { language } = useNews();
+
+  const content = language === 'hi' ? {
+    subTitle: 'हिन्दी-अंग्रेजी द्विभाषी साप्ताहिक',
+    ownerLabel: 'स्वामी, प्रकाशक और मुद्रक',
+    locationLabel: 'प्रकाशन कार्यालय',
+    editorLabel: 'संपादक',
+    contactLabel: 'संपर्क',
+    rniLabel: 'आर.एन.आई. संख्या',
+    jurisdiction: '* सभी कानूनी विवाद लखनऊ क्षेत्राधिकार के अधीन हैं।'
+  } : {
+    subTitle: 'Hindi-English Bilingual Weekly',
+    ownerLabel: 'Owner, Publisher & Printer',
+    locationLabel: 'Publication Office',
+    editorLabel: 'Editor',
+    contactLabel: 'Contact',
+    rniLabel: 'R.N.I. Number',
+    jurisdiction: '* All legal disputes are subject to Lucknow Jurisdiction.'
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -20,7 +41,7 @@ const OwnerDetailsCard = () => {
             HINDUSTAN RADIANCE
           </h2>
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">
-            Hindi-English Bilingual Weekly
+            {content.subTitle}
           </p>
         </div>
 
@@ -33,7 +54,7 @@ const OwnerDetailsCard = () => {
             </div>
             <div className="space-y-1">
               <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                Owner, Publisher & Printer
+                {content.ownerLabel}
               </p>
               <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
                Dr. YAZDANI HASAN
@@ -48,7 +69,7 @@ const OwnerDetailsCard = () => {
             </div>
             <div className="space-y-1">
               <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                Publication Office
+                {content.locationLabel}
               </p>
               <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
                 Excel on Printing Press, 102/52/1 Baisi ki Masjid, Nawab Kazjan ka Hata, Napendra Sanyal Road, 23 B New Friends Colony Sector-6, Near DPS School, Janakipuram Extension, Lucknow, U.P. India - 206031
@@ -62,7 +83,7 @@ const OwnerDetailsCard = () => {
               <div className="flex items-center gap-2 mb-2">
                 <User size={14} className="text-emerald-600" />
                 <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                  Editor
+                  {content.editorLabel}
                 </p>
               </div>
               <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
@@ -73,7 +94,7 @@ const OwnerDetailsCard = () => {
               <div className="flex items-center gap-2 mb-2">
                 <Phone size={14} className="text-orange-600" />
                 <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                  Contact
+                  {content.contactLabel}
                 </p>
               </div>
               <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
@@ -87,7 +108,7 @@ const OwnerDetailsCard = () => {
         <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-900 dark:bg-slate-950 text-white">
           <div className="flex items-center gap-2">
             <ShieldCheck size={16} className="text-emerald-400" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">R.N.I. Number</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{content.rniLabel}</span>
           </div>
           <span className="text-xs font-mono font-bold text-emerald-400">UPBIL/2016/68873</span>
         </div>
@@ -95,12 +116,13 @@ const OwnerDetailsCard = () => {
         {/* Jurisdiction */}
         <div className="pt-2 text-center">
           <p className="text-[10px] text-slate-400 dark:text-slate-500 italic">
-            * All legal disputes are subject to Lucknow Jurisdiction.
+            {content.jurisdiction}
           </p>
         </div>
       </div>
     </motion.div>
   );
 };
+
 
 export default OwnerDetailsCard;

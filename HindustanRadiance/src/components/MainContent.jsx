@@ -18,7 +18,7 @@ const MainContent = () => {
         {/* Main Feed */}
         <div className="flex-1">
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6">
-            <h2 className="text-4xl font-sans font-black text-midnight dark:text-white tracking-tight">
+            <h2 className="text-4xl font-sans font-black text-midnight tracking-tight">
               {language === 'hi' ? 'ताज़ा खबरें' : 'Latest Stories'}
             </h2>
             <div className="flex flex-wrap gap-3">
