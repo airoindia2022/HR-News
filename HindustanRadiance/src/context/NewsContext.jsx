@@ -12,6 +12,7 @@ export const NewsProvider = ({ children }) => {
     trendingNews: [],
     // editorsChoice: [],
     epaperUrl: null,
+    epapers: [],
     isLoading: true,
     isTranslating: false,
     error: null
@@ -109,18 +110,23 @@ export const NewsProvider = ({ children }) => {
       }
       */
 
-      // 2.5 Fetch Latest E-paper
+      // 2.5 Fetch E-papers (both latest and all previous ones)
       let epaperUrl = null;
+      let epapers = [];
       try {
-        const epaperRes = await fetch(`${baseUrl}/api/epaper/latest`);
-        if (epaperRes.ok) {
-          const epaperData = await epaperRes.json();
-          if (epaperData?._id) {
-            epaperUrl = `${baseUrl}/api/epaper/view/${epaperData._id}`;
+        const epaperListRes = await fetch(`${baseUrl}/api/epaper`);
+        if (epaperListRes.ok) {
+          const rawEpapers = await epaperListRes.json();
+          epapers = rawEpapers.map(p => ({
+            ...p,
+            url: `${baseUrl}/api/epaper/view/${p._id}`
+          }));
+          if (epapers.length > 0) {
+            epaperUrl = epapers[0].url;
           }
         }
       } catch (err) {
-        console.error("E-paper fetch error:", err);
+        console.error("E-papers fetch error:", err);
       }
 
       // 3. Map RSS Items (Commented out to show only custom uploaded news)
@@ -176,6 +182,7 @@ export const NewsProvider = ({ children }) => {
         ].slice(0, 6).map(mapItem),
         editorsChoice: (editorsFromBackend.length > 0 ? editorsFromBackend : backendData.slice(3, 10)).slice(0, 5).map(mapItem),
         epaperUrl,
+        epapers,
         isLoading: false,
         error: null
       };

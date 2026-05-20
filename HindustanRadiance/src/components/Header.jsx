@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Cloud, Zap, Search, ShieldCheck, FileText } from 'lucide-react';
 import { useNews } from '../context/NewsContext';
 import { Link } from 'react-router-dom';
+import EPaperModal from './EPaperModal';
 
 const Header = () => {
   const [date, setDate] = useState(new Date());
   const [weather, setWeather] = useState({ temp: '24', city: 'New Delhi', icon: 'Cloud' });
-  const { epaperUrl, language, toggleLanguage } = useNews();
+  const { epapers, language, toggleLanguage } = useNews();
+  const [isEpaperModalOpen, setIsEpaperModalOpen] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => setDate(new Date()), 1000);
@@ -47,7 +49,8 @@ const Header = () => {
     : ['World', 'Politics', 'Business', 'Technology', 'Sports', 'Culture', 'Careers'];
 
   return (
-    <header className="sticky top-0 z-50 w-full glass shadow-sm">
+    <>
+      <header className="sticky top-0 z-50 w-full glass shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
 
@@ -86,16 +89,14 @@ const Header = () => {
                 {language === 'en' ? 'हिन्दी' : 'ENG'}
               </button>
 
-              {epaperUrl && (
-                <a
-                  href={epaperUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+              {epapers && epapers.length > 0 && (
+                <button
+                  onClick={() => setIsEpaperModalOpen(true)}
                   className="flex items-center gap-2 px-4 py-2 bg-radiance-gold text-white text-[10px] font-black rounded-full hover:bg-slate-900 transition-all shadow-md transform hover:-translate-y-0.5"
                 >
                   <FileText size={14} />
                   {language === 'hi' ? 'ई-पेपर' : 'E-PAPER'}
-                </a>
+                </button>
               )}
 
               <div className="flex items-center px-3 py-1.5 rounded-full bg-red-500/10 text-red-500 text-[10px] font-black animate-pulse border border-red-500/20">
@@ -138,7 +139,14 @@ const Header = () => {
           ))}
         </ul>
       </nav>
-    </header>
+      </header>
+      <EPaperModal
+        isOpen={isEpaperModalOpen}
+        onClose={() => setIsEpaperModalOpen(false)}
+        epapers={epapers || []}
+        language={language}
+      />
+    </>
   );
 };
 

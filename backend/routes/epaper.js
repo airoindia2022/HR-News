@@ -3,6 +3,8 @@ const router = express.Router();
 const EPaper = require('../models/EPaper');
 const auth = require('../middleware/auth');
 const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
 
 // Store in memory instead of disk
 const storage = multer.memoryStorage();
@@ -18,6 +20,14 @@ const upload = multer({
   }
 });
 
+// Ensure cache directory exists for fast E-paper loading
+const cacheDir = path.join(__dirname, '../cache/epaper');
+if (!fs.existsSync(cacheDir)) {
+  fs.mkdirSync(cacheDir, { recursive: true });
+}
+
+const getCachePath = (id) => path.join(cacheDir, `${id}.pdf`);
+
 // @route   GET api/epaper/latest
 // @desc    Get the latest e-paper info (without binary data)
 router.get('/latest', async (req, res) => {
@@ -29,16 +39,42 @@ router.get('/latest', async (req, res) => {
   }
 });
 
+// @route   GET api/epaper
+// @desc    Get all e-papers (without binary data, sorted by date desc)
+router.get('/', async (req, res) => {
+  try {
+    const papers = await EPaper.find().sort({ date: -1 }).select('-pdfData');
+    res.json(papers);
+  } catch (err) {
+    res.status(500).json({ msg: 'Server Error' });
+  }
+});
+
 // @route   GET api/epaper/view/:id
-// @desc    View/Download the PDF from database
+// @desc    View/Download the PDF from database (caches locally for performance)
 router.get('/view/:id', async (req, res) => {
   try {
-    const paper = await EPaper.findById(req.params.id);
+    const id = req.params.id;
+    const cachePath = getCachePath(id);
+
+    // If cached locally, serve immediately
+    if (fs.existsSync(cachePath)) {
+      res.set('Content-Type', 'application/pdf');
+      return res.sendFile(cachePath);
+    }
+
+    const paper = await EPaper.findById(id);
     if (!paper) return res.status(404).json({ msg: 'E-paper not found' });
 
-    res.set('Content-Type', paper.contentType);
+    // Write to cache asynchronously so we don't block the response
+    fs.writeFile(cachePath, paper.pdfData, (err) => {
+      if (err) console.error('Error writing epaper cache:', err);
+    });
+
+    res.set('Content-Type', paper.contentType || 'application/pdf');
     res.send(paper.pdfData);
   } catch (err) {
+    console.error('EPaper View Error:', err);
     res.status(500).json({ msg: 'Server Error' });
   }
 });
@@ -73,6 +109,12 @@ router.post('/', [auth, upload.single('pdf')], async (req, res) => {
       await paper.save();
     }
 
+    // Cache the uploaded PDF to disk immediately so the first view is instant
+    const cachePath = getCachePath(paper._id);
+    fs.writeFile(cachePath, req.file.buffer, (err) => {
+      if (err) console.error('Error writing uploaded epaper to cache:', err);
+    });
+
     res.json({ msg: 'E-paper saved to database', id: paper._id });
   } catch (err) {
     console.error('EPaper Upload Error:', err);
@@ -84,12 +126,23 @@ router.post('/', [auth, upload.single('pdf')], async (req, res) => {
 // @desc    Delete an e-paper
 router.delete('/:id', auth, async (req, res) => {
   try {
-    const paper = await EPaper.findById(req.params.id);
+    const id = req.params.id;
+    const paper = await EPaper.findById(id);
     if (!paper) return res.status(404).json({ msg: 'E-paper not found' });
 
     await paper.deleteOne();
+
+    // Delete local cached file if it exists
+    const cachePath = getCachePath(id);
+    if (fs.existsSync(cachePath)) {
+      fs.unlink(cachePath, (err) => {
+        if (err) console.error('Error deleting cached epaper:', err);
+      });
+    }
+
     res.json({ msg: 'E-paper removed' });
   } catch (err) {
+    console.error('EPaper Delete Error:', err);
     res.status(500).json({ msg: 'Server Error' });
   }
 });
