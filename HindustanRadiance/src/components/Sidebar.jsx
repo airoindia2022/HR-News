@@ -15,7 +15,7 @@ const Sidebar = () => {
       {/* ... (commented out Editor's Choice) */}
 
       {/* Company Editor Details */}
-      <OwnerDetailsCard />
+      {/* <OwnerDetailsCard /> */}
 
       <div className="p-6">
         <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-midnight mb-6">

@@ -19,6 +19,7 @@ export const NewsProvider = ({ children }) => {
   });
 
   const [language, setLanguage] = useState('en');
+  const [selectedCategory, setSelectedCategory] = useState('All');
 
   const translateText = async (texts, target) => {
     if (!texts || texts.length === 0 || target === 'en') return texts;
@@ -229,7 +230,7 @@ export const NewsProvider = ({ children }) => {
   }, [language]);
 
   return (
-    <NewsContext.Provider value={{ ...news, language, toggleLanguage, refreshNews: fetchNews }}>
+    <NewsContext.Provider value={{ ...news, language, toggleLanguage, refreshNews: fetchNews, selectedCategory, setSelectedCategory }}>
       {children}
     </NewsContext.Provider>
   );

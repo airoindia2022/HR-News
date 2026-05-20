@@ -1,14 +1,43 @@
 import React, { useState, useEffect } from 'react';
 import { Cloud, Zap, Search, ShieldCheck, FileText } from 'lucide-react';
 import { useNews } from '../context/NewsContext';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import EPaperModal from './EPaperModal';
 
 const Header = () => {
   const [date, setDate] = useState(new Date());
   const [weather, setWeather] = useState({ temp: '24', city: 'New Delhi', icon: 'Cloud' });
-  const { epapers, language, toggleLanguage } = useNews();
+  const { epapers, language, toggleLanguage, selectedCategory, setSelectedCategory } = useNews();
   const [isEpaperModalOpen, setIsEpaperModalOpen] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const categoryMap = {
+    'world': 'World',
+    'politics': 'Politics',
+    'business': 'Business',
+    'technology': 'Technology',
+    'sports': 'Sports',
+    'culture': 'Culture',
+    'विश्व': 'World',
+    'राजनीति': 'Politics',
+    'व्यापार': 'Business',
+    'तकनीक': 'Technology',
+    'खेल': 'Sports',
+    'संस्कृति': 'Culture',
+  };
+
+  const getEnglishCategoryName = (item) => {
+    return categoryMap[item.toLowerCase()] || item;
+  };
+
+  const handleCategoryClick = (item) => {
+    const englishCategory = getEnglishCategoryName(item);
+    setSelectedCategory(englishCategory);
+    if (location.pathname !== '/') {
+      navigate('/');
+    }
+  };
 
   useEffect(() => {
     const timer = setInterval(() => setDate(new Date()), 1000);
@@ -67,7 +96,7 @@ const Header = () => {
 
           {/* Center: Logo */}
           <div className="flex-1 flex justify-center">
-            <Link to="/" className="text-center group cursor-pointer">
+            <Link to="/" className="text-center group cursor-pointer" onClick={() => setSelectedCategory('All')}>
               <h1 className="text-3xl md:text-4xl font-sans font-black tracking-tighter transition-all group-hover:tracking-normal">
                 HINDUSTAN <span className="text-radiance-gold">RADIANCE</span>
               </h1>
@@ -128,15 +157,29 @@ const Header = () => {
       {/* Search/Nav placeholder */}
       <nav className="border-t border-slate-100 py-3 overflow-x-auto">
         <ul className="max-w-7xl mx-auto px-4 flex justify-between md:justify-center md:space-x-12 text-[10px] font-black uppercase tracking-[0.2em] whitespace-nowrap">
-          {navItems.map((item) => (
-            <li key={item} className="hover:text-radiance-gold transition-colors cursor-pointer text-slate-500">
-              {item === 'Careers' || item === 'करियर' ? (
-                <Link to="/careers">{item}</Link>
-              ) : (
-                item
-              )}
-            </li>
-          ))}
+          {navItems.map((item) => {
+            const isCareers = item === 'Careers' || item === 'करियर';
+            const englishName = getEnglishCategoryName(item);
+            const isActive = !isCareers && selectedCategory.toLowerCase() === englishName.toLowerCase() && location.pathname === '/';
+            
+            return (
+              <li 
+                key={item} 
+                onClick={() => !isCareers && handleCategoryClick(item)}
+                className={`transition-all duration-300 cursor-pointer text-[10px] font-black uppercase tracking-[0.2em] ${
+                  isActive 
+                    ? 'text-radiance-gold border-b-2 border-radiance-gold pb-1 scale-105' 
+                    : 'text-slate-500 hover:text-radiance-gold'
+                }`}
+              >
+                {isCareers ? (
+                  <Link to="/careers">{item}</Link>
+                ) : (
+                  item
+                )}
+              </li>
+            );
+          })}
         </ul>
       </nav>
       </header>
