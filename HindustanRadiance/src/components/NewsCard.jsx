@@ -1,8 +1,12 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Clock, ArrowUpRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Clock, ArrowUpRight, X, Calendar, User } from 'lucide-react';
+import { useNews } from '../context/NewsContext';
 
-const NewsCard = ({ image, video, category, title, excerpt, author, date, link, size = "default" }) => {
+const NewsCard = ({ id, image, video, category, title, excerpt, content, author, date, link, size = "default" }) => {
+  const { language } = useNews();
+  const [translatedContent, setTranslatedContent] = useState('');
+  const [isTranslatingContent, setIsTranslatingContent] = useState(false);
   const getVideoEmbedUrl = (url) => {
     if (!url) return null;
     if (url.includes('youtube.com') || url.includes('youtu.be')) {
@@ -14,6 +18,32 @@ const NewsCard = ({ image, video, category, title, excerpt, author, date, link, 
 
   const embedUrl = getVideoEmbedUrl(video);
   const isDirectVideo = video && !embedUrl;
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const isExternal = link && (link.startsWith('http://') || link.startsWith('https://')) && !link.includes('/api/news/image') && !link.includes('/api/news/video');
+  const hasContent = content && content.trim().length > 0;
+
+  useEffect(() => {
+    if (isModalOpen && language === 'hi' && content && !translatedContent) {
+      setIsTranslatingContent(true);
+      
+      const translateArticle = async () => {
+        try {
+          const response = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=hi&dt=t&q=${encodeURIComponent(content)}`);
+          const data = await response.json();
+          const translatedText = data[0].map(item => item[0]).join('');
+          setTranslatedContent(translatedText);
+        } catch (error) {
+          console.error("Error translating full story content:", error);
+          setTranslatedContent(content);
+        } finally {
+          setIsTranslatingContent(false);
+        }
+      };
+      
+      translateArticle();
+    }
+  }, [isModalOpen, language, content, translatedContent]);
 
   return (
     <motion.div
@@ -96,10 +126,24 @@ const NewsCard = ({ image, video, category, title, excerpt, author, date, link, 
 
         <div className={`mt-auto pt-6 border-t ${size === "large" ? "border-slate-800" : "border-slate-100 dark:border-slate-800"} flex justify-between items-center`}>
           <a 
-            href={link} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className={`text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 ${size === "large" ? "text-white" : "text-midnight dark:text-white"} group-hover:text-radiance-gold transition-all transform hover:translate-x-2`}
+            href={isExternal ? link : '#'} 
+            target={isExternal ? "_blank" : undefined} 
+            rel={isExternal ? "noopener noreferrer" : undefined}
+            onClick={(e) => {
+              if (!isExternal) {
+                e.preventDefault();
+                if (hasContent) {
+                  setIsModalOpen(true);
+                }
+              }
+            }}
+            className={`text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 ${
+              size === "large" ? "text-white" : "text-midnight dark:text-white"
+            } ${
+              !isExternal && !hasContent 
+                ? "opacity-30 cursor-default pointer-events-none" 
+                : "group-hover:text-radiance-gold transition-all transform hover:translate-x-2 cursor-pointer"
+            }`}
           >
             Read Full Story <ArrowUpRight size={16} />
           </a>
@@ -111,6 +155,113 @@ const NewsCard = ({ image, video, category, title, excerpt, author, date, link, 
           </div>
         </div>
       </div>
+
+      {/* Full Article Modal */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsModalOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            />
+
+            {/* Modal Content Drawer */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ duration: 0.3 }}
+              className="relative bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-2xl border border-slate-200 dark:border-slate-800 z-10 flex flex-col"
+            >
+              {/* Close button */}
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="absolute top-6 right-6 p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-full text-slate-500 dark:text-slate-400 transition-colors z-20"
+              >
+                <X size={20} />
+              </button>
+
+              {/* Content Container */}
+              <div className="p-8 md:p-10 text-left">
+                {/* Category */}
+                <span className="px-3 py-1 bg-radiance-gold/10 text-radiance-gold text-[10px] font-black uppercase tracking-[0.2em] rounded-full">
+                  {category || "Global"}
+                </span>
+
+                {/* Title */}
+                <h2 className="text-2xl md:text-3xl font-sans font-extrabold leading-tight text-midnight dark:text-white mt-4 mb-4">
+                  {title}
+                </h2>
+
+                {/* Metadata */}
+                <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">
+                  <span className="flex items-center gap-1.5"><Calendar size={14} className="text-radiance-gold" /> {date || "TODAY"}</span>
+                  <span className="flex items-center gap-1.5"><User size={14} className="text-radiance-gold" /> {author || "NEWS DESK"}</span>
+                </div>
+
+                {/* Media Container */}
+                <div className="w-full rounded-2xl overflow-hidden mb-6 bg-slate-50 border border-slate-100 dark:border-slate-800 max-h-[350px] relative">
+                  {embedUrl ? (
+                    <div className="aspect-video w-full">
+                      <iframe
+                        src={embedUrl}
+                        className="w-full h-full border-0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        title={title}
+                      />
+                    </div>
+                  ) : isDirectVideo ? (
+                    <video
+                      className="w-full object-cover max-h-[350px]"
+                      controls
+                      preload="metadata"
+                      playsInline
+                      crossOrigin="anonymous"
+                      poster={image}
+                    >
+                      <source src={video} type="video/mp4" />
+                      Your browser does not support the video tag.
+                    </video>
+                  ) : (
+                    <img
+                      src={image}
+                      alt={title}
+                      className="w-full h-full object-cover max-h-[350px]"
+                      onError={(e) => {
+                        e.target.src = "https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=80&w=800";
+                        e.target.onerror = null;
+                      }}
+                    />
+                  )}
+                </div>
+
+                {/* Main content body */}
+                <div className="prose dark:prose-invert max-w-none text-slate-700 dark:text-slate-300 leading-relaxed text-sm md:text-base whitespace-pre-wrap">
+                  {language === 'hi' ? (
+                    isTranslatingContent ? (
+                      <div className="flex flex-col items-center gap-3 py-8">
+                        <div className="w-8 h-8 rounded-full border-4 border-radiance-gold/20 border-t-radiance-gold animate-spin" />
+                        <span className="text-xs font-bold text-slate-400 animate-pulse uppercase tracking-wider">
+                          अनुवाद किया जा रहा है...
+                        </span>
+                      </div>
+                    ) : (
+                      translatedContent || content
+                    )
+                  ) : (
+                    content
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };

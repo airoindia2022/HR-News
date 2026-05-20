@@ -372,7 +372,7 @@ const AdminDashboard = () => {
 
                       <div className="space-y-2">
                         <label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">
-                          Main Content <span className="text-red-500">*</span>
+                          Main Content <span className="text-slate-300 font-normal">(Optional)</span>
                         </label>
                         <textarea
                           name="content"
@@ -380,7 +380,6 @@ const AdminDashboard = () => {
                           onChange={handleChange}
                           placeholder="Write the full story here..."
                           className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-radiance-gold/10 focus:border-radiance-gold outline-none transition-all font-medium text-slate-700 min-h-[300px]"
-                          required
                         />
                       </div>
 
@@ -450,6 +449,7 @@ const AdminDashboard = () => {
                         </div>
                       </div>
 
+                      {/* 
                       <div className="flex items-center gap-3 p-4 bg-slate-50 border border-slate-100 rounded-2xl">
                         <input
                           type="checkbox"
@@ -461,6 +461,7 @@ const AdminDashboard = () => {
                         />
                         <label htmlFor="isBreaking" className="text-sm font-bold text-slate-700 cursor-pointer uppercase tracking-wider">Mark as Breaking News</label>
                       </div>
+                      */}
 
                       <button
                         type="submit"

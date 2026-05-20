@@ -18,16 +18,10 @@ const upload = multer({
 const cpUpload = upload.fields([{ name: 'image', maxCount: 1 }, { name: 'video', maxCount: 1 }]);
 
 // @route   GET api/news
-// @desc    Get news items (defaults to last 24 hours)
+// @desc    Get news items
 router.get('/', async (req, res) => {
   try {
-    const showAll = req.query.all === 'true';
     let query = {};
-    
-    if (!showAll) {
-      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-      query.date = { $gte: twentyFourHoursAgo };
-    }
 
     const news = await News.find(query)
       .sort({ date: -1 })
@@ -66,13 +60,11 @@ router.get('/video/:id', async (req, res) => {
 });
 
 // @route   GET api/news/breaking
-// @desc    Get breaking news items (last 24 hours)
+// @desc    Get breaking news items
 router.get('/breaking', async (req, res) => {
   try {
-    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
     const breakingNews = await News.find({ 
-      isBreaking: true,
-      date: { $gte: twentyFourHoursAgo }
+      isBreaking: true
     }).sort({ date: -1 });
     res.json(breakingNews);
   } catch (err) {
