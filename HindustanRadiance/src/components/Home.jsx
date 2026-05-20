@@ -34,6 +34,7 @@ const Home = () => {
           <>
             <HeroSection />
             
+            {/* 
             <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 my-10" aria-labelledby="ai-feature-heading">
               <div 
                 onClick={() => setIsModalOpen(true)}
@@ -59,6 +60,7 @@ const Home = () => {
                 </div>
               </div>
             </section>
+            */}
 
             <MainContent />
           </>
