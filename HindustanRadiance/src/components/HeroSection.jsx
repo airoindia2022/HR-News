@@ -38,22 +38,17 @@ const HeroSection = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-16 gap-y-10">
             {trendingNews.map((news, index) => (
-              <div key={news.id} className="group relative flex gap-4 cursor-pointer">
-                <span className="text-4xl font-serif font-bold text-slate-200 dark:text-slate-800 transition-colors group-hover:text-radiance-gold/40">
+              <div key={news.id} className="group relative flex gap-4">
+                <span className="text-4xl font-serif font-bold text-slate-200 dark:text-slate-800 transition-colors">
                   0{index + 1}
                 </span>
                 <div className="flex flex-col">
                   <span className="text-[10px] font-bold uppercase tracking-widest text-radiance-gold mb-1">
                     {news.category}
                   </span>
-                  <a 
-                    href={news.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-bold leading-tight text-black group-hover:text-radiance-gold transition-colors"
-                  >
+                  <h3 className="font-bold leading-tight text-black">
                     {news.title}
-                  </a>
+                  </h3>
                 </div>
               </div>
             ))}

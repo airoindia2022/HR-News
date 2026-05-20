@@ -17,6 +17,7 @@ const Sidebar = () => {
       {/* Company Editor Details */}
       {/* <OwnerDetailsCard /> */}
 
+      {/* Commented out Popular Tags section
       <div className="p-6">
         <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-midnight mb-6">
           {language === 'hi' ? 'लोकप्रिय टैग' : 'Popular Tags'}
@@ -32,6 +33,7 @@ const Sidebar = () => {
           ))}
         </div>
       </div>
+      */}
     </aside>
   );
 };

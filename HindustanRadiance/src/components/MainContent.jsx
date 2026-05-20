@@ -37,10 +37,10 @@ const MainContent = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-      <div className="flex flex-col lg:flex-row gap-16">
+      <div className="w-full">
         
         {/* Main Feed */}
-        <div className="flex-1">
+        <div className="w-full">
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6">
             <h2 className="text-4xl font-sans font-black text-midnight tracking-tight">
               {language === 'hi' ? 'ताज़ा खबरें' : 'Latest Stories'}
@@ -69,7 +69,7 @@ const MainContent = () => {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
               {filteredStories.map((item) => (
                 <NewsCard key={item.id} {...item} />
               ))}
@@ -86,10 +86,11 @@ const MainContent = () => {
           </div>
         </div>
 
-        {/* Sidebar */}
+        {/* Sidebar - commented out as popular tags are commented out and 3 columns are desired
         <div className="lg:w-96 flex-shrink-0">
           <Sidebar />
         </div>
+        */}
 
       </div>
     </div>
