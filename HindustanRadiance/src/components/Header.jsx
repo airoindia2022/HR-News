@@ -18,13 +18,13 @@ const Header = () => {
     'business': 'Business',
     'technology': 'Technology',
     'sports': 'Sports',
-    'culture': 'Culture',
+    // 'culture': 'Culture',
     'विश्व': 'World',
     'राजनीति': 'Politics',
     'व्यापार': 'Business',
     'तकनीक': 'Technology',
     'खेल': 'Sports',
-    'संस्कृति': 'Culture',
+    // 'संस्कृति': 'Culture',
   };
 
   const getEnglishCategoryName = (item) => {
@@ -74,8 +74,8 @@ const Header = () => {
   });
 
   const navItems = language === 'hi' 
-    ? ['विश्व', 'राजनीति', 'व्यापार', 'तकनीक', 'खेल', 'संस्कृति', 'करियर']
-    : ['World', 'Politics', 'Business', 'Technology', 'Sports', 'Culture', 'Careers'];
+    ? ['विश्व', 'राजनीति', 'व्यापार', 'तकनीक', 'खेल','करियर']
+    : ['World', 'Politics', 'Business', 'Technology', 'Sports','Careers'];
 
   return (
     <>

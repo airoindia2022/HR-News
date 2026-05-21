@@ -363,7 +363,7 @@ const AdminDashboard = () => {
                               <option value="Business">Business</option>
                               <option value="Technology">Technology</option>
                               <option value="Sports">Sports</option>
-                              <option value="Culture">Culture</option>
+                              {/* <option value="Culture">Culture</option> */}
                               <option value="Features">Features</option>
                             </select>
                           </div>
