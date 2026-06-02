@@ -87,18 +87,24 @@ router.post('/', [auth, upload.single('pdf')], async (req, res) => {
       return res.status(400).json({ msg: 'Please upload a PDF file' });
     }
 
-    const { title } = req.body;
-    const date = new Date().setHours(0,0,0,0);
+    const { title, date } = req.body;
+    let paperDate;
+    if (date) {
+      paperDate = new Date(date);
+    } else {
+      paperDate = new Date();
+    }
+    paperDate.setHours(0, 0, 0, 0);
 
     const newPaper = {
       pdfData: req.file.buffer,
       contentType: req.file.mimetype,
-      title: title || `Hindustan Radiance - ${new Date().toLocaleDateString()}`,
-      date
+      title: title || `Hindustan Radiance - ${paperDate.toLocaleDateString()}`,
+      date: paperDate
     };
 
     // Replace today's paper if it exists
-    let paper = await EPaper.findOne({ date });
+    let paper = await EPaper.findOne({ date: paperDate });
     if (paper) {
       paper.pdfData = newPaper.pdfData;
       paper.contentType = newPaper.contentType;

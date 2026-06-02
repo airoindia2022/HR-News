@@ -35,7 +35,9 @@ const AdminDashboard = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [selectedVideoFile, setSelectedVideoFile] = useState(null);
   const [selectedPdf, setSelectedPdf] = useState(null);
-  const [latestEpaper, setLatestEpaper] = useState(null);
+  const [epaperTitle, setEpaperTitle] = useState('');
+  const [epaperDate, setEpaperDate] = useState(new Date().toISOString().split('T')[0]);
+  const [epapers, setEpapers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [epaperMessage, setEpaperMessage] = useState('');
@@ -48,15 +50,15 @@ const AdminDashboard = () => {
       navigate('/contact/admin');
     }
     fetchNews();
-    fetchLatestEpaper();
+    fetchEpapers();
   }, [navigate]);
 
-  const fetchLatestEpaper = async () => {
+  const fetchEpapers = async () => {
     try {
-      const res = await api.get('/api/epaper/latest');
-      setLatestEpaper(res.data);
+      const res = await api.get('/api/epaper');
+      setEpapers(res.data);
     } catch (err) {
-      console.error('Error fetching latest epaper', err);
+      console.error('Error fetching epapers', err);
     }
   };
 
@@ -174,13 +176,17 @@ const AdminDashboard = () => {
       const token = localStorage.getItem('adminToken');
       const data = new FormData();
       data.append('pdf', selectedPdf);
+      data.append('title', epaperTitle);
+      data.append('date', epaperDate);
 
       await api.post('/api/epaper', data, {
         headers: { 'x-auth-token': token }
       });
       setEpaperMessage('E-paper published successfully!');
       setSelectedPdf(null);
-      fetchLatestEpaper();
+      setEpaperTitle('');
+      setEpaperDate(new Date().toISOString().split('T')[0]);
+      fetchEpapers();
     } catch (err) {
       setEpaperMessage('Error publishing E-paper.');
     } finally {
@@ -195,8 +201,8 @@ const AdminDashboard = () => {
         await api.delete(`/api/epaper/${id}`, {
           headers: { 'x-auth-token': token }
         });
-        setLatestEpaper(null);
         setEpaperMessage('E-paper deleted successfully!');
+        fetchEpapers();
       } catch (err) {
         console.error('Error deleting epaper', err);
       }
@@ -488,19 +494,43 @@ const AdminDashboard = () => {
                     </div>
 
                     <div className="p-6">
-                      <p className="text-xs text-slate-500 mb-4 font-medium">Upload today's digital edition (PDF format).</p>
+                      <p className="text-xs text-slate-500 mb-4 font-medium">Upload a digital edition (PDF format).</p>
                       <form onSubmit={handlePdfUpload} className="space-y-4">
                         {epaperMessage && (
                           <div className={`p-3 rounded-xl text-[10px] font-bold uppercase tracking-wider ${epaperMessage.includes('success') ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
                             {epaperMessage}
                           </div>
                         )}
-                        <input
-                          type="file"
-                          accept="application/pdf"
-                          onChange={(e) => setSelectedPdf(e.target.files[0])}
-                          className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-radiance-gold/10 file:text-radiance-gold hover:file:bg-radiance-gold/20"
-                        />
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Date</label>
+                          <input
+                            type="date"
+                            value={epaperDate}
+                            onChange={(e) => setEpaperDate(e.target.value)}
+                            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-radiance-gold/10 focus:border-radiance-gold outline-none transition-all font-semibold text-xs text-slate-800"
+                            required
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Title (Optional)</label>
+                          <input
+                            type="text"
+                            placeholder="Defaults to: Hindustan Radiance - Date"
+                            value={epaperTitle}
+                            onChange={(e) => setEpaperTitle(e.target.value)}
+                            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-radiance-gold/10 focus:border-radiance-gold outline-none transition-all font-semibold text-xs text-slate-800"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">PDF File</label>
+                          <input
+                            type="file"
+                            accept="application/pdf"
+                            onChange={(e) => setSelectedPdf(e.target.files[0])}
+                            className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-bold file:bg-radiance-gold/10 file:text-radiance-gold hover:file:bg-radiance-gold/20"
+                            required
+                          />
+                        </div>
                         <button
                           type="submit"
                           disabled={loading || !selectedPdf}
@@ -510,26 +540,30 @@ const AdminDashboard = () => {
                         </button>
                       </form>
 
-                      {latestEpaper && (
+                      {epapers && epapers.length > 0 && (
                         <div className="mt-8 pt-6 border-t border-slate-100">
-                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Live E-Paper</p>
-                          <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                            <div className="flex items-center gap-3 min-w-0">
-                              <div className="w-10 h-10 bg-radiance-gold/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                                <FileText className="text-radiance-gold" size={20} />
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">All Uploaded E-Papers ({epapers.length})</p>
+                          <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
+                            {epapers.map((paper) => (
+                              <div key={paper._id} className="flex items-center justify-between p-3.5 bg-slate-50 rounded-2xl border border-slate-100 hover:border-slate-200 transition-all">
+                                <div className="flex items-center gap-3 min-w-0">
+                                  <div className="w-9 h-9 bg-radiance-gold/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                                    <FileText className="text-radiance-gold" size={16} />
+                                  </div>
+                                  <div className="min-w-0">
+                                    <h4 className="text-xs font-bold text-slate-800 truncate">{paper.title}</h4>
+                                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">{new Date(paper.date).toLocaleDateString()}</p>
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={() => handleDeleteEpaper(paper._id)}
+                                  className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                  title="Delete E-paper"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
                               </div>
-                              <div className="min-w-0">
-                                <h4 className="text-xs font-bold text-slate-800 truncate">{latestEpaper.title}</h4>
-                                <p className="text-[10px] text-slate-500">{new Date(latestEpaper.date).toLocaleDateString()}</p>
-                              </div>
-                            </div>
-                            <button
-                              onClick={() => handleDeleteEpaper(latestEpaper._id)}
-                              className="p-2 text-slate-300 hover:text-red-500 transition-colors"
-                              title="Delete E-paper"
-                            >
-                              <Trash2 size={18} />
-                            </button>
+                            ))}
                           </div>
                         </div>
                       )}
