@@ -1,7 +1,9 @@
 import axios from 'axios';
 
 const LOCAL_URL = 'http://localhost:5005';
-const LIVE_URL = 'https://hindustanradiance.co.in/backend';
+const LIVE_URL = typeof window !== 'undefined' && window.location.hostname === 'localhost' 
+  ? 'https://hindustanradiance.co.in/backend' 
+  : (typeof window !== 'undefined' ? window.location.origin + '/backend' : 'https://hindustanradiance.co.in/backend');
 
 // Helper to determine which URL to use
 export const getBaseUrl = async () => {
