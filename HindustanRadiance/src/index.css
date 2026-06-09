@@ -38,4 +38,12 @@
   .radiance-glow {
     box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
   }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }

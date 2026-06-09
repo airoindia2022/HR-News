@@ -81,7 +81,7 @@ const Header = () => {
     <>
       <header className="sticky top-0 z-50 w-full glass shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
+        <div className="flex flex-col lg:flex-row justify-between items-center h-auto lg:h-20 py-4 lg:py-0 gap-4 lg:gap-0">
 
           {/* Left: Date & Weather */}
           <div className="hidden lg:flex items-center space-x-6 text-sm font-medium">
@@ -95,9 +95,9 @@ const Header = () => {
           </div>
 
           {/* Center: Logo */}
-          <div className="flex-1 flex justify-center">
+          <div className="flex-1 flex justify-center w-full">
             <Link to="/" className="text-center group cursor-pointer" onClick={() => setSelectedCategory('All')}>
-              <h1 className="text-3xl md:text-4xl font-sans font-black tracking-tighter transition-all group-hover:tracking-normal">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-sans font-black tracking-tighter transition-all group-hover:tracking-normal whitespace-nowrap">
                 HINDUSTAN <span className="text-radiance-gold">RADIANCE</span>
               </h1>
               <p className="text-[10px] uppercase tracking-[0.3em] opacity-60 font-black mt-1">
@@ -107,8 +107,8 @@ const Header = () => {
           </div>
 
           {/* Right: Actions */}
-          <div className="flex flex-col items-end space-y-2">
-            <div className="flex items-center space-x-4">
+          <div className="flex flex-col items-center lg:items-end space-y-3 lg:space-y-2 w-full lg:w-auto">
+            <div className="flex items-center justify-center lg:justify-end space-x-3 sm:space-x-4 w-full">
               
               {/* Language Toggle */}
               <button
@@ -155,8 +155,8 @@ const Header = () => {
       </div>
 
       {/* Search/Nav placeholder */}
-      <nav className="border-t border-slate-100 py-3 overflow-x-auto">
-        <ul className="max-w-7xl mx-auto px-4 flex justify-between md:justify-center md:space-x-12 text-[10px] font-black uppercase tracking-[0.2em] whitespace-nowrap">
+      <nav className="border-t border-slate-100 py-3 overflow-x-auto scrollbar-hide">
+        <ul className="max-w-7xl mx-auto px-4 flex justify-start md:justify-center space-x-6 md:space-x-12 text-[10px] font-black uppercase tracking-[0.2em] whitespace-nowrap">
           {navItems.map((item) => {
             const isCareers = item === 'Careers' || item === 'करियर';
             const englishName = getEnglishCategoryName(item);

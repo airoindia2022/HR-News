@@ -50,9 +50,9 @@ const Footer = () => {
           </div>
         </div>
         
-        <div className="mt-20 pt-8 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+        <div className="mt-20 pt-8 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 text-center md:text-left">
           <p>© 2026 Hindustan Radiance Media Group. All Rights Reserved.</p>
-          <div className="flex gap-8">
+          <div className="flex flex-wrap justify-center md:justify-end gap-4 md:gap-8">
             <Link to="/privacy-policy" className="hover:text-radiance-gold cursor-pointer transition-colors">
               {language === 'hi' ? 'गोपनीयता नीति' : 'Privacy Policy'}
             </Link>
