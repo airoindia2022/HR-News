@@ -14,7 +14,9 @@ import {
   FileText,
   History,
   Send,
-  XCircle
+  XCircle,
+  Menu,
+  X
 } from 'lucide-react';
 import api from '../utils/api';
 
@@ -42,6 +44,7 @@ const AdminDashboard = () => {
   const [message, setMessage] = useState('');
   const [epaperMessage, setEpaperMessage] = useState('');
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' or 'published'
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -229,9 +232,25 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row">
+      {/* Mobile Header */}
+      <div className="md:hidden bg-slate-900 text-white p-4 flex items-center justify-between sticky top-0 z-50 shadow-md">
+        <h2 className="text-xl font-sans text-radiance-gold font-bold">HR <span className="text-white">ADMIN</span></h2>
+        <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2 text-slate-300 hover:text-white transition-colors">
+          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      </div>
+
+      {/* Sidebar Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/50 z-30 md:hidden backdrop-blur-sm"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-72 bg-slate-900 text-white flex flex-col fixed h-full">
+      <aside className={`fixed inset-y-0 left-0 z-40 w-72 bg-slate-900 text-white flex flex-col h-full transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
         <div className="p-8">
           <h2 className="text-2xl font-sans text-radiance-gold font-bold">HR <span className="text-radiance-gold">ADMIN</span></h2>
           <p className="text-slate-400 text-[10px] uppercase tracking-[0.2em] mt-2 font-bold">Hindustan Radiance</p>
@@ -244,14 +263,14 @@ const AdminDashboard = () => {
           </Link>
 
           <button 
-            onClick={() => setActiveTab('overview')}
+            onClick={() => { setActiveTab('overview'); setIsMobileMenuOpen(false); }}
             className={`w-full p-4 rounded-xl flex items-center gap-3 font-bold text-sm transition-all ${activeTab === 'overview' ? 'bg-radiance-gold/10 text-radiance-gold' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
           >
             <LayoutDashboard size={20} />
             Dashboard Overview
           </button>
           <button 
-            onClick={() => setActiveTab('published')}
+            onClick={() => { setActiveTab('published'); setIsMobileMenuOpen(false); }}
             className={`w-full p-4 rounded-xl flex items-center gap-3 font-bold text-sm transition-all ${activeTab === 'published' ? 'bg-radiance-gold/10 text-radiance-gold' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
           >
             <Newspaper size={20} />
@@ -271,20 +290,20 @@ const AdminDashboard = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 ml-72 p-12 overflow-y-auto">
+      <main className="flex-1 md:ml-72 p-4 md:p-12 overflow-y-auto w-full">
         <div className="max-w-5xl mx-auto">
           {activeTab === 'overview' ? (
             <>
-              <header className="flex justify-between items-center mb-10">
+              <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
                 <div>
-                  <h1 className="text-3xl font-sans font-black text-slate-900">
+                  <h1 className="text-2xl md:text-3xl font-sans font-black text-slate-900">
                     {isEditing ? 'Edit News Article' : 'Publish News'}
                   </h1>
-                  <p className="text-slate-500 mt-1">
+                  <p className="text-sm md:text-base text-slate-500 mt-1">
                     {isEditing ? 'Update the selected story details.' : 'Add new stories to the editorial feed.'}
                   </p>
                 </div>
-                <div className="flex gap-4">
+                <div className="flex flex-wrap gap-4">
                   {isEditing && (
                     <button
                       onClick={cancelEdit}
@@ -628,10 +647,10 @@ const AdminDashboard = () => {
           ) : (
             <>
               {/* Published Stories Tab Content */}
-              <div className="flex justify-between items-center mb-10">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
                 <div>
-                  <h1 className="text-4xl font-sans font-black text-slate-900 tracking-tight mb-2">Published Stories</h1>
-                  <p className="text-slate-500 font-medium">Manage and edit all your published news articles.</p>
+                  <h1 className="text-3xl md:text-4xl font-sans font-black text-slate-900 tracking-tight mb-2">Published Stories</h1>
+                  <p className="text-sm md:text-base text-slate-500 font-medium">Manage and edit all your published news articles.</p>
                 </div>
                 <button 
                   onClick={() => setActiveTab('overview')}
@@ -677,7 +696,7 @@ const AdminDashboard = () => {
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
+                        <div className="flex flex-col md:flex-row items-center gap-2 mt-4 md:mt-0 md:opacity-0 md:group-hover:opacity-100 transition-all md:translate-x-4 md:group-hover:translate-x-0">
                           <button 
                             onClick={() => {
                               handleEdit(item);
